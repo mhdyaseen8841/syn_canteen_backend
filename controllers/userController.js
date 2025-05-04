@@ -43,8 +43,8 @@ const userLogin = AsyncHandler(async (req, res) => {
       return res.status(500).send("Database connection not available");
     }
 
-    const decryptedPassword = decryptPassword(req.body.psw);
-
+    // const decryptedPassword = decryptPassword(req.body.psw);
+ const decryptedPassword = req.body.psw;
     try {
       await pool.connect();
       const result = await pool.request()

@@ -6,7 +6,7 @@ import "dotenv/config";
 import cookieParser from "cookie-parser";
 import { createServer } from "http";
 import rateLimit from "express-rate-limit";
-import visitorReportsRouter from "./routes/visitorReportsRoute.js";
+import canteenRoute from "./routes/canteenRoute.js";
 import loginRouter from "./routes/loginRoute.js";
 
 const PORT = process.env.PORT || 4000;
@@ -74,10 +74,10 @@ const limiter = rateLimit({
 });
 
 app.get("/", (req, res) => {
-  res.send("Welcome to the Gate Pass API!");
+  res.send("Welcome to the Canteen API!");
 });
 
-app.use("/api", visitorReportsRouter);
+app.use("/api", canteenRoute);
 app.use("/api/users", loginRouter)
 
 export default app;
