@@ -17,6 +17,7 @@ import {
   addExpense,
   getExpense,
   getCanteenCalender,
+  editExpense,
 } from "../controllers/canteenController.js";
 
 const router = express.Router();
@@ -52,7 +53,7 @@ router.post("/guest-transaction", addGuestTransaction);
 //Manage Expense
 router.post("/expense", addExpense);
 router.get("/expense", getExpense);
-
+router.put("/expense", editExpense);
 //canteen_calender
 router.get("/canteen-calender",getCanteenCalender)
 export default router;

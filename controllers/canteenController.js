@@ -435,6 +435,59 @@ const addExpense = AsyncHandler(async (req, res) => {
   }
 });
 
+const editExpense = AsyncHandler(async (req, res) => {
+  const {
+    expense_id,
+    menu_id,
+    canteen_calendar_id,
+    expense_date,
+    expense_amount,
+    remarks,
+  } = req.body;
+
+  // Validate required fields
+  if (
+    !expense_id ||
+    !menu_id ||
+    !canteen_calendar_id ||
+    !expense_date ||
+    !expense_amount 
+  ) {
+    return res.status(400).json({
+      message: "All fields (expense_id, menu_id, canteen_calendar_id, expense_date, expense_amount, remarks) are required",
+    });
+  }
+
+  const pool = await connectDB();
+  if (!pool) {
+    return res.status(500).json({ message: "Database connection not available" });
+  }
+
+  try {
+    const result = await pool
+      .request()
+      .input("expense_id", expense_id)
+      .input("menu_id", menu_id)
+      .input("canteen_calendar_id", canteen_calendar_id)
+      .input("expense_date", expense_date)
+      .input("expense_amount", expense_amount)
+      .input("remarks", remarks)
+      .input("user_id", req.user_id)
+      .execute("edit_expense");
+
+    res.status(200).json({
+      message: "Expense updated successfully",
+    });
+  } catch (error) {
+    console.error("Error updating expense:", error);
+    res.status(500).json({
+      message: "Failed to update expense",
+      error: error.message,
+    });
+  }
+});
+
+
 
 const getCanteenCalender = AsyncHandler(async (req, res) => {
    const { is_settled=0 } = req.query;
@@ -472,5 +525,6 @@ export {
   addCompany,
   getCompany,
   addExpense,
-  getExpense
+  getExpense,
+  editExpense
 };
