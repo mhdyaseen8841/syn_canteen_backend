@@ -126,13 +126,20 @@ const editDepartment = AsyncHandler(async (req, res) => {
   } catch (error) {
     res.status(500).json(error);
   }
-})
+});
 
 // Add Employee
 const addEmployee = AsyncHandler(async (req, res) => {
-  const {employee_code,employee_type, employee_name, department_id, company_id,
-     premium_enabled, user, active } =
-    req.body;
+  const {
+    employee_code,
+    employee_type,
+    employee_name,
+    department_id,
+    company_id,
+    premium_enabled,
+    user,
+    active,
+  } = req.body;
   let pool = await connectDB();
   if (!pool) {
     return res.status(500).send("Database connection not available");
@@ -147,7 +154,7 @@ const addEmployee = AsyncHandler(async (req, res) => {
       .input("company_id", company_id)
       .input("department_id", department_id)
       .input("premium_enabled", premium_enabled)
-      .input("reference_id",employee_code)
+      .input("reference_id", employee_code)
       .input("active", active)
       .input("user", user || req.user?.display_name || "")
       .execute("add_employee");
@@ -200,8 +207,8 @@ const editEmployee = AsyncHandler(async (req, res) => {
 });
 
 const getEmployee = AsyncHandler(async (req, res) => {
-  const { company_id,employee_type="employee" } = req.query;
-  if(!company_id) {
+  const { company_id, employee_type = "employee" } = req.query;
+  if (!company_id) {
     return res.status(400).json({ message: "company_id is required" });
   }
   let pool = await connectDB();
@@ -209,11 +216,11 @@ const getEmployee = AsyncHandler(async (req, res) => {
     return res.status(500).send("Database connection not available");
   }
   try {
-     const request = pool.request();
-      request.input("company_id", company_id);
-      request.input("employee_type", employee_type);
+    const request = pool.request();
+    request.input("company_id", company_id);
+    request.input("employee_type", employee_type);
     const result = await request.execute("get_employee");
-    
+
     const data = result.recordset;
     res.json(data);
   } catch (error) {
@@ -236,13 +243,13 @@ const getDepartment = AsyncHandler(async (req, res) => {
   }
 });
 
-
-
 const addFixedTransaction = AsyncHandler(async (req, res) => {
   const { menu_id, no_of_entries } = req.body;
 
   if (!menu_id || !no_of_entries) {
-    return res.status(400).json({ message: "menu_id, user_id, and no_of_entries are required" });
+    return res
+      .status(400)
+      .json({ message: "menu_id, user_id, and no_of_entries are required" });
   }
 
   const pool = await connectDB();
@@ -277,12 +284,13 @@ const addFixedTransaction = AsyncHandler(async (req, res) => {
   }
 });
 
-
 const addContractorTransaction = AsyncHandler(async (req, res) => {
-  const { employee_id, menu_id, no_of_entries,trasaction_time } = req.body;
+  const { employee_id, menu_id, no_of_entries, trasaction_time } = req.body;
 
   if (!menu_id || !no_of_entries) {
-    return res.status(400).json({ message: "menu_id, user_id, and no_of_entries are required" });
+    return res
+      .status(400)
+      .json({ message: "menu_id, user_id, and no_of_entries are required" });
   }
 
   const pool = await connectDB();
@@ -313,16 +321,19 @@ const addContractorTransaction = AsyncHandler(async (req, res) => {
     });
   } catch (error) {
     console.error("Error adding Contractor transaction:", error);
-    res.status(500).json({ message: "Failed to add Contractor transaction", error });
+    res
+      .status(500)
+      .json({ message: "Failed to add Contractor transaction", error });
   }
 });
 
-
 const addGuestTransaction = AsyncHandler(async (req, res) => {
-  const { employee_id, menu_id, no_of_entries,trasaction_time } = req.body;
+  const { employee_id, menu_id, no_of_entries, trasaction_time } = req.body;
 
   if (!menu_id || !no_of_entries) {
-    return res.status(400).json({ message: "menu_id, user_id, and no_of_entries are required" });
+    return res
+      .status(400)
+      .json({ message: "menu_id, user_id, and no_of_entries are required" });
   }
 
   const pool = await connectDB();
@@ -357,6 +368,109 @@ const addGuestTransaction = AsyncHandler(async (req, res) => {
   }
 });
 
+const getExpense = AsyncHandler(async (req, res) => {
+   let { canteen_calendar_id, menu_id } = req.query;
+  
+   if(menu_id ==undefined || menu_id == "" || menu_id == 'null' || menu_id == "undefined"){
+    menu_id = null
+   }
+  let pool = await connectDB();
+  if (!pool) {
+    return res.status(500).send("Database connection not available");
+  }
+  try {
+    const request = pool.request();
+    request.input("canteen_calendar_id", canteen_calendar_id);
+    request.input("menu_id", menu_id);
+    const result = await request.execute("get_expense");
+
+    const data = result.recordset;
+    res.json(data);
+  } catch (error) {
+    res.status(500).json(error);
+  }
+});
+
+const addExpense = AsyncHandler(async (req, res) => {
+  const {
+    menu_id,
+    canteen_calendar_id,
+    expense_date,
+    expense_amount,
+    remarks,
+  } = req.body;
+
+  if (!menu_id || !canteen_calendar_id) {
+    return res
+      .status(400)
+      .json({ message: "menu_id,  and canteen_calendar_id are required" });
+  }
+
+  const pool = await connectDB();
+  if (!pool) {
+    return res.status(500).send("Database connection not available");
+  }
+
+  try {
+    await pool.connect();
+
+    const result = await pool
+      .request()
+
+      .input("Menu_Id", menu_id)
+      .input("user_ID", req.user_id)
+      .input("canteen_calendar_id", canteen_calendar_id)
+      .input("expense_date", expense_date)
+      .input("expense_amount", expense_amount)
+      .input("remarks", remarks)
+      .execute("add_expense");
+
+    res.status(200).json({
+      message: "Expense added successfully",
+      transaction_id: result.output.Transaction_Id_Out,
+    });
+  } catch (error) {
+    console.error("Error adding expense:", error);
+    res.status(500).json({ message: "Failed to add expense", error });
+  }
+});
 
 
-export {addFixedTransaction,addContractorTransaction,addGuestTransaction, getMenu, editMenu, addEmployee, editEmployee, getEmployee, getDepartment,editDepartment,addDepartment,addCompany,getCompany };
+const getCanteenCalender = AsyncHandler(async (req, res) => {
+   const { is_settled=0 } = req.query;
+ 
+  let pool = await connectDB();
+  if (!pool) {
+    return res.status(500).send("Database connection not available");
+  }
+  try {
+    const request = pool.request();
+      request.input("is_settled", is_settled);
+
+    const result = await request.execute("Get_canteen_calendar");
+
+    const data = result.recordset;
+    res.json(data);
+  } catch (error) {
+    res.status(500).json(error);
+  }
+});
+
+export {
+  getCanteenCalender,
+  addFixedTransaction,
+  addContractorTransaction,
+  addGuestTransaction,
+  getMenu,
+  editMenu,
+  addEmployee,
+  editEmployee,
+  getEmployee,
+  getDepartment,
+  editDepartment,
+  addDepartment,
+  addCompany,
+  getCompany,
+  addExpense,
+  getExpense
+};

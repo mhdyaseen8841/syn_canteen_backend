@@ -13,7 +13,10 @@ import {
   getCompany,
   addFixedTransaction,
   addContractorTransaction,
-  addGuestTransaction
+  addGuestTransaction,
+  addExpense,
+  getExpense,
+  getCanteenCalender,
 } from "../controllers/canteenController.js";
 
 const router = express.Router();
@@ -35,7 +38,6 @@ router.route("/employee").get(protect, getEmployee);
 router.route("/employee").post(protect, addEmployee);
 router.route("/employee").put(protect, editEmployee);
 
-
 //Transaction
 
 // Add fixed transaction
@@ -47,4 +49,10 @@ router.post("/contractor-transaction", addContractorTransaction);
 // Add guest transaction
 router.post("/guest-transaction", addGuestTransaction);
 
+//Manage Expense
+router.post("/expense", addExpense);
+router.get("/expense", getExpense);
+
+//canteen_calender
+router.get("/canteen-calender",getCanteenCalender)
 export default router;
