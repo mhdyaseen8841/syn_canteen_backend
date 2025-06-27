@@ -18,6 +18,12 @@ import {
   getExpense,
   getCanteenCalender,
   editExpense,
+  searchEmployee,
+  addEmployeeTransaction,
+  getCurrentTransaction,
+  deleteEmployeeTransaction,
+  getSettlementRates,
+  doSettlement,
 } from "../controllers/canteenController.js";
 
 const router = express.Router();
@@ -38,22 +44,33 @@ router.route("/department").get(protect, getDepartment);
 router.route("/employee").get(protect, getEmployee);
 router.route("/employee").post(protect, addEmployee);
 router.route("/employee").put(protect, editEmployee);
+router.route("/employee/search").post(protect, searchEmployee);
 
 //Transaction
 
+router.post('/get-current-transaction', protect, getCurrentTransaction);
+
 // Add fixed transaction
-router.post("/fixed-transaction", addFixedTransaction);
+router.post("/fixed-transaction",protect, addFixedTransaction);
 
 // Add contractor transaction
-router.post("/contractor-transaction", addContractorTransaction);
+router.post("/contractor-transaction",protect, addContractorTransaction);
 
 // Add guest transaction
-router.post("/guest-transaction", addGuestTransaction);
+router.post("/guest-transaction",protect, addGuestTransaction);
 
+// Add guest transaction
+router.post("/employee-transaction",protect, addEmployeeTransaction);
+//delete transaction
+router.post("/delete-employee-transaction",protect, deleteEmployeeTransaction);
 //Manage Expense
-router.post("/expense", addExpense);
-router.get("/expense", getExpense);
-router.put("/expense", editExpense);
+router.post("/expense", protect,addExpense);
+router.get("/expense", protect, getExpense);
+router.put("/expense", protect, editExpense);
 //canteen_calender
-router.get("/canteen-calender",getCanteenCalender)
+router.get("/canteen-calender",protect, getCanteenCalender)
+
+//settlement 
+router.post("/do-settlement",protect, doSettlement)
+router.get("/settlement-rates",protect, getSettlementRates)
 export default router;

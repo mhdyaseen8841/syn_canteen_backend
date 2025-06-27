@@ -14,16 +14,16 @@ const protect = AsyncHandler(async (req, res, next) => {
 
     if (req.user === undefined) {
       next()
-      // res.status(401).json({ msg: 'No user found..' })
-      // throw new Error('Not Autherized')
+      res.status(401).json({ msg: 'No user found..' })
+      throw new Error('Not Autherized')
     } else {
       next();
     }
 
   } catch (error) {
   next()
-    // res.status(401).json({ msg: 'Not authorized..' })
-    // throw new Error('Not authorized, token failed');
+    res.status(401).json({ msg: 'Not authorized..' })
+    throw new Error('Not authorized, token failed');
 
   }
 });
