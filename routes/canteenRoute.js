@@ -24,6 +24,9 @@ import {
   deleteEmployeeTransaction,
   getSettlementRates,
   doSettlement,
+  getCanteenReports,
+  getCanteenEmployeeReports,
+  addRating,
 } from "../controllers/canteenController.js";
 
 const router = express.Router();
@@ -73,4 +76,12 @@ router.get("/canteen-calender",protect, getCanteenCalender)
 //settlement 
 router.post("/do-settlement",protect, doSettlement)
 router.get("/settlement-rates",protect, getSettlementRates)
+
+//reports
+router.post("/get-canteen-employee-report",protect, getCanteenEmployeeReports)
+router.post("/get-canteen-report",protect, getCanteenReports)
+
+
+//rating
+router.route("/rating").post(addRating)
 export default router;
