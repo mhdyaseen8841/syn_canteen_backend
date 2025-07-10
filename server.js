@@ -1,7 +1,6 @@
 import express from "express";
 import cors from "cors";
 import morgan from "morgan";
-import connectDB from "./config/connection.js";
 import "dotenv/config";
 import cookieParser from "cookie-parser";
 import { createServer } from "http";

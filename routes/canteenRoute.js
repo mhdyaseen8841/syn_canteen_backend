@@ -27,6 +27,7 @@ import {
   getCanteenReports,
   getCanteenEmployeeReports,
   addRating,
+  getComplaint,
 } from "../controllers/canteenController.js";
 
 const router = express.Router();
@@ -51,37 +52,37 @@ router.route("/employee/search").post(protect, searchEmployee);
 
 //Transaction
 
-router.post('/get-current-transaction', protect, getCurrentTransaction);
+router.post("/get-current-transaction", protect, getCurrentTransaction);
 
 // Add fixed transaction
-router.post("/fixed-transaction",protect, addFixedTransaction);
+router.post("/fixed-transaction", protect, addFixedTransaction);
 
 // Add contractor transaction
-router.post("/contractor-transaction",protect, addContractorTransaction);
+router.post("/contractor-transaction", protect, addContractorTransaction);
 
 // Add guest transaction
-router.post("/guest-transaction",protect, addGuestTransaction);
+router.post("/guest-transaction", protect, addGuestTransaction);
 
 // Add guest transaction
-router.post("/employee-transaction",protect, addEmployeeTransaction);
+router.post("/employee-transaction", protect, addEmployeeTransaction);
 //delete transaction
-router.post("/delete-employee-transaction",protect, deleteEmployeeTransaction);
+router.post("/delete-employee-transaction", protect, deleteEmployeeTransaction);
 //Manage Expense
-router.post("/expense", protect,addExpense);
+router.post("/expense", protect, addExpense);
 router.get("/expense", protect, getExpense);
 router.put("/expense", protect, editExpense);
 //canteen_calender
-router.get("/canteen-calender",protect, getCanteenCalender)
+router.get("/canteen-calender", protect, getCanteenCalender);
 
-//settlement 
-router.post("/do-settlement",protect, doSettlement)
-router.get("/settlement-rates",protect, getSettlementRates)
+//settlement
+router.post("/do-settlement", protect, doSettlement);
+router.get("/settlement-rates", protect, getSettlementRates);
 
 //reports
-router.post("/get-canteen-employee-report",protect, getCanteenEmployeeReports)
-router.post("/get-canteen-report",protect, getCanteenReports)
-
+router.post("/get-canteen-employee-report", protect, getCanteenEmployeeReports);
+router.post("/get-canteen-report", protect, getCanteenReports);
 
 //rating
-router.route("/rating").post(addRating)
+router.route("/rating").post(protect, addRating);
+router.route("/get-complaint").post(protect, getComplaint);
 export default router;

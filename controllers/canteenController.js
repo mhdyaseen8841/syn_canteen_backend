@@ -729,39 +729,7 @@ const getSettlementRates = AsyncHandler(async (req, res) => {
   }
 });
 
-const doSettlement1 = AsyncHandler(async (req, res) => {
-  const { menus, menu_id, canteen_calendar_id, amount } = req.body;
 
-  if (!menu_id || !canteen_calendar_id || !amount) {
-    return res.status(400).json({
-      message: "menu_id, amount and canteen_calendar_id are required",
-    });
-  }
-
-  const pool = await connectDB();
-  if (!pool) {
-    return res.status(500).send("Database connection not available");
-  }
-
-  try {
-    await pool.connect();
-
-    const result = await pool
-      .request()
-      .input("Menu_Id", menu_id)
-      .input("User_ID", req.user_id)
-      .input("canteen_calendar_id", canteen_calendar_id)
-      .input("amount", amount)
-      .execute("settlement");
-
-    res.status(200).json({
-      message: "Settled added successfully",
-    });
-  } catch (error) {
-    console.error("Error adding settlement:", error);
-    res.status(500).json({ message: "Failed to add settlement", error });
-  }
-});
 
 const doSettlement = AsyncHandler(async (req, res) => {
   const { menus, canteen_calendar_id } = req.body;
@@ -913,6 +881,37 @@ const addRating = AsyncHandler(async (req, res) => {
   }
 });
 
+
+const getComplaint = AsyncHandler(async (req, res) => {
+  const { from_date, to_date, employee_id } = req.body;
+
+  if (!from_date || !to_date) {
+    return res.status(400).json({ message: "from_date and to_date are required" });
+  }
+
+  const pool = await connectDB();
+  if (!pool) return res.status(500).send("Database connection failed");
+
+  const empId = !employee_id || employee_id === 'undefined' ? null : employee_id;
+
+
+  try {
+    await pool.connect();
+
+    const result = await pool
+      .request()
+      .input("from_date", from_date)
+      .input("to_date", to_date)
+      .input("employee_id", empId)
+      .execute("get_complaint");
+    res.json({ data: result.recordset });
+  } catch (error) {
+    console.error("Error fetching complaints:", error);
+    res.status(500).json({ message: "Error fetching complaints", error });
+  }
+});
+
+
 export {
   getCanteenCalender,
   getCurrentTransaction,
@@ -940,4 +939,5 @@ export {
   getCanteenReports,
   getCanteenEmployeeReports,
   addRating,
+  getComplaint
 };

@@ -6,12 +6,11 @@ import { generateAccessToken } from '../utils/generateToken.js';
 
 const protect = AsyncHandler(async (req, res, next) => {
   let token;
-  req.user_id = 1
   try {
     token = req.headers.authorization.split(' ')[1];
     const decoded = jwt.verify(token, process.env.JWT_ACCESS_SECRET);
     req.user = decoded.user
-
+    req.user_id = decoded.user?.user_id
     if (req.user === undefined) {
       next()
       res.status(401).json({ msg: 'No user found..' })
