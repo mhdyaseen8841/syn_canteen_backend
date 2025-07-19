@@ -902,7 +902,7 @@ const getComplaint = AsyncHandler(async (req, res) => {
       .request()
       .input("from_date", from_date)
       .input("to_date", to_date)
-      .input("employee_id", empId)
+      .input("employee_code", empId)
       .execute("get_complaint");
     res.json({ data: result.recordset });
   } catch (error) {

@@ -63,7 +63,7 @@ const userLogin = AsyncHandler(async (req, res) => {
     }
 
     res.json({
-      accessToken: generateAccessToken(userInfo.User_ID, userInfo.display_name),
+      accessToken: generateAccessToken(userInfo.User_ID, userInfo.display_name, userInfo.user_type),
       user: userInfo,
       companies: companyList,
     });
