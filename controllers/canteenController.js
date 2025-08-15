@@ -335,8 +335,8 @@ const addFixedTransaction = AsyncHandler(async (req, res) => {
       .input("No_Of_Entries", no_of_entries)
       .input("transaction_type", "fixed")
       .input("source", null)
-      .output("Transaction_Id_Out", sql.Int)
-      .execute("add_canteen_transaction");
+      .output("Transaction_Id_Out", sql.VarChar)
+      .execute("add_canteen_transaction_multiple");
 
     res.status(200).json({
       message: "Fixed transaction added successfully",
@@ -376,12 +376,12 @@ const addContractorTransaction = AsyncHandler(async (req, res) => {
       .input("No_Of_Entries", no_of_entries)
       .input("transaction_type", "contractor")
       .input("source", null)
-      .output("Transaction_Id_Out", sql.Int)
-      .execute("add_canteen_transaction");
+      .output("Transaction_Id_Out", sql.VarChar)
+      .execute("add_canteen_transaction_multiple");
 
     res.status(200).json({
       message: "Contractor transaction added successfully",
-      transaction_id: result.output.Transaction_Id_Out,
+      transaction_id: result.output.Transaction_Id_Out
     });
   } catch (error) {
     console.error("Error adding Contractor transaction:", error);
@@ -419,12 +419,12 @@ const addGuestTransaction = AsyncHandler(async (req, res) => {
       .input("No_Of_Entries", no_of_entries)
       .input("transaction_type", "guest")
       .input("source", null)
-      .output("Transaction_Id_Out", sql.Int)
-      .execute("add_canteen_transaction");
+      .output("Transaction_Id_Out", sql.VarChar)
+      .execute("add_canteen_transaction_multiple");
 
     res.status(200).json({
       message: "Guest transaction added successfully",
-      transaction_id: result.output.Transaction_Id_Out,
+      transaction_id: result.output.Transaction_Id_Out
     });
   } catch (error) {
     console.error("Error adding guest transaction:", error);
@@ -729,8 +729,6 @@ const getSettlementRates = AsyncHandler(async (req, res) => {
   }
 });
 
-
-
 const doSettlement = AsyncHandler(async (req, res) => {
   const { menus, canteen_calendar_id } = req.body;
 
@@ -881,19 +879,20 @@ const addRating = AsyncHandler(async (req, res) => {
   }
 });
 
-
 const getComplaint = AsyncHandler(async (req, res) => {
   const { from_date, to_date, employee_id } = req.body;
 
   if (!from_date || !to_date) {
-    return res.status(400).json({ message: "from_date and to_date are required" });
+    return res
+      .status(400)
+      .json({ message: "from_date and to_date are required" });
   }
 
   const pool = await connectDB();
   if (!pool) return res.status(500).send("Database connection failed");
 
-  const empId = !employee_id || employee_id === 'undefined' ? null : employee_id;
-
+  const empId =
+    !employee_id || employee_id === "undefined" ? null : employee_id;
 
   try {
     await pool.connect();
@@ -911,6 +910,33 @@ const getComplaint = AsyncHandler(async (req, res) => {
   }
 });
 
+const getFixedDashboard = AsyncHandler(async (req, res) => {
+  const { from_date, to_date, menu_id } = req.body;
+
+  if (!from_date || !to_date) {
+    return res.status(400).json({ message: "from_date, to_date are required" });
+  }
+
+  let pool = await connectDB();
+  if (!pool) {
+    return res.status(500).send("Database connection not available");
+  }
+
+  try {
+    await pool.connect();
+    const request = pool.request();
+    request.input("from_date", from_date);
+    request.input("to_date", to_date);
+    request.input("menu_id", menu_id ? menu_id : null);
+    const result = await request.execute("get_fixed_dashboard");
+
+    const data = result.recordset;
+    res.json(data);
+  } catch (error) {
+    console.log(error);
+    res.status(500).json({ message: "Failed to fetch fixed dashboard", error });
+  }
+});
 
 export {
   getCanteenCalender,
@@ -939,5 +965,6 @@ export {
   getCanteenReports,
   getCanteenEmployeeReports,
   addRating,
-  getComplaint
+  getComplaint,
+  getFixedDashboard,
 };

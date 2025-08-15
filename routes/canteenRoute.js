@@ -28,6 +28,7 @@ import {
   getCanteenEmployeeReports,
   addRating,
   getComplaint,
+  getFixedDashboard,
 } from "../controllers/canteenController.js";
 
 const router = express.Router();
@@ -85,4 +86,6 @@ router.post("/get-canteen-report", protect, getCanteenReports);
 //rating
 router.route("/rating").post(protect, addRating);
 router.route("/get-complaint").post(protect, getComplaint);
+
+router.post('/fixed-dashboard', protect, getFixedDashboard);
 export default router;
