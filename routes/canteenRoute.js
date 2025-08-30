@@ -29,6 +29,7 @@ import {
   addRating,
   getComplaint,
   getFixedDashboard,
+  getContractorDashboard
 } from "../controllers/canteenController.js";
 
 const router = express.Router();
@@ -88,4 +89,5 @@ router.route("/rating").post(protect, addRating);
 router.route("/get-complaint").post(protect, getComplaint);
 
 router.post('/fixed-dashboard', protect, getFixedDashboard);
+router.post('/contractor-dashboard', protect, getContractorDashboard)
 export default router;

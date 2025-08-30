@@ -938,6 +938,35 @@ const getFixedDashboard = AsyncHandler(async (req, res) => {
   }
 });
 
+const getContractorDashboard = AsyncHandler(async (req, res) => {
+  const { from_date, to_date, contractor_id, menu_id } = req.body;
+
+  if (!from_date || !to_date) {
+    return res.status(400).json({ message: "from_date, to_date are required" });
+  }
+
+  let pool = await connectDB();
+  if (!pool) {
+    return res.status(500).send("Database connection not available");
+  }
+
+  try {
+    await pool.connect();
+    const request = pool.request();
+    request.input("from_date", from_date);
+    request.input("to_date", to_date);
+    request.input("menu_id", menu_id ? menu_id : null);
+    request.input("contractor_id", contractor_id ? contractor_id : null);
+    const result = await request.execute("get_contractor_dashboard");
+
+    const data = result.recordset;
+    res.json(data);
+  } catch (error) {
+    console.log(error);
+    res.status(500).json({ message: "Failed to fetch fixed dashboard", error });
+  }
+});
+
 export {
   getCanteenCalender,
   getCurrentTransaction,
@@ -967,4 +996,5 @@ export {
   addRating,
   getComplaint,
   getFixedDashboard,
+  getContractorDashboard
 };
