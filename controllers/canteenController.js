@@ -308,7 +308,7 @@ const getDepartment = AsyncHandler(async (req, res) => {
 });
 
 const addFixedTransaction = AsyncHandler(async (req, res) => {
-  const { menu_id, no_of_entries } = req.body;
+  const { menu_id, no_of_entries, trasaction_time } = req.body;
 
   if (!menu_id || !no_of_entries) {
     return res
@@ -330,7 +330,7 @@ const addFixedTransaction = AsyncHandler(async (req, res) => {
       .input("Menu_Id", menu_id)
       .input("user_ID", req.user_id)
       .input("Transaction_Id", null)
-      .input("Transaction_Time", null)
+      .input("Transaction_Time", trasaction_time)
       .input("Is_Delete", 0)
       .input("No_Of_Entries", no_of_entries)
       .input("transaction_type", "fixed")
@@ -505,16 +505,22 @@ const deleteEmployeeTransaction = AsyncHandler(async (req, res) => {
       .json({ message: "Failed to deleted employee transaction", error });
   }
 });
-
 const getCurrentTransaction = AsyncHandler(async (req, res) => {
   let {
     canteen_calendar_id,
     menu_id,
-    transaction_type, //this is for current transaction so all type
-    from_date, //this can be null
-    to_date, //this can be null
-    employee_id, //this can be null
+    transaction_type,
+    from_date,
+    to_date,
+    employee_id,
+    page = 1,   // default page
+    limit = 10, // default limit
   } = req.body;
+
+  // sanitize page & limit
+  page = parseInt(page) > 0 ? parseInt(page) : 1;
+  limit = parseInt(limit) > 0 ? parseInt(limit) : 10;
+  const offset = (page - 1) * limit; // offset if needed in SP
 
   if (
     menu_id == undefined ||
@@ -529,6 +535,7 @@ const getCurrentTransaction = AsyncHandler(async (req, res) => {
   if (!pool) {
     return res.status(500).send("Database connection not available");
   }
+
   try {
     const request = pool.request();
     request.input("canteen_calendar_id", canteen_calendar_id);
@@ -538,14 +545,27 @@ const getCurrentTransaction = AsyncHandler(async (req, res) => {
     request.input("to_date", to_date ? toSqlDate(to_date) : null);
     request.input("employee_id", employee_id ? employee_id : null);
 
+    // pagination inputs
+    request.input("page_number", page);
+    request.input("page_size", limit);
+    request.output("total_records", 0);
+    request.output("total_pages", 0);
+
     const result = await request.execute("Get_canteen_transaction");
 
-    const data = result.recordset;
-    res.json(data);
+    res.json({
+      page,
+      limit,
+      total_records: result.output.total_records,
+      total_pages: result.output.total_pages,
+      data: result.recordset,
+    });
   } catch (error) {
+    console.log(error);
     res.status(500).json(error);
   }
 });
+
 
 const getExpense = AsyncHandler(async (req, res) => {
   let { canteen_calendar_id, menu_id } = req.query;
@@ -939,10 +959,10 @@ const getFixedDashboard = AsyncHandler(async (req, res) => {
 });
 
 const getContractorDashboard = AsyncHandler(async (req, res) => {
-  const { from_date, to_date, contractor_id, menu_id } = req.body;
+  const { fromDate, toDate, contractor_id, menu_id } = req.body;
 
-  if (!from_date || !to_date) {
-    return res.status(400).json({ message: "from_date, to_date are required" });
+  if (!fromDate || !toDate) {
+    return res.status(400).json({ message: "from date, to date are required" });
   }
 
   let pool = await connectDB();
@@ -953,8 +973,8 @@ const getContractorDashboard = AsyncHandler(async (req, res) => {
   try {
     await pool.connect();
     const request = pool.request();
-    request.input("from_date", from_date);
-    request.input("to_date", to_date);
+    request.input("from_date", fromDate);
+    request.input("to_date", toDate);
     request.input("menu_id", menu_id ? menu_id : null);
     request.input("contractor_id", contractor_id ? contractor_id : null);
     const result = await request.execute("get_contractor_dashboard");

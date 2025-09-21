@@ -32,6 +32,8 @@ import {
   getContractorDashboard
 } from "../controllers/canteenController.js";
 
+// import { exportTransactions } from "../controllers/exportController.js";
+
 const router = express.Router();
 
 // Menu
@@ -90,4 +92,7 @@ router.route("/get-complaint").post(protect, getComplaint);
 
 router.post('/fixed-dashboard', protect, getFixedDashboard);
 router.post('/contractor-dashboard', protect, getContractorDashboard)
+
+
+// router.post('/export-transactions',protect, exportTransactions)
 export default router;
