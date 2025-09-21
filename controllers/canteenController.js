@@ -551,7 +551,11 @@ const getCurrentTransaction = AsyncHandler(async (req, res) => {
     request.output("total_records", 0);
     request.output("total_pages", 0);
 
-    const result = await request.execute("Get_canteen_transaction");
+    let spName = "Get_canteen_transaction"
+    if(transaction_type == "fixed" || transaction_type == "guest" ){
+      spName = "Get_canteen_transaction_fixed_guest"
+    }
+    const result = await request.execute(spName);
 
     res.json({
       page,
