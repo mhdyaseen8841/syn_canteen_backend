@@ -663,10 +663,12 @@ const editExpense = AsyncHandler(async (req, res) => {
     !expense_amount ||
     active === undefined
   ) {
+    if(active != 0 || !expense_id){
     return res.status(400).json({
       message:
         "All fields (expense_id, menu_id, canteen_calendar_id, expense_date, expense_amount, remarks, active) are required",
     });
+  }
   }
 
   const pool = await connectDB();
@@ -822,11 +824,9 @@ const getCanteenEmployeeReports = AsyncHandler(async (req, res) => {
     request.input("employee_id", employeeId);
     request.input("canteen_calendar_id", canteenCalendarId);
     request.output("is_Settled", sql.Int);
-    request.output("AC_Dine_Charge", sql.Decimal(10, 2));
     const result = await request.execute("Get_canteen_employee_report");
 
     const is_Settled = result.output.is_Settled;
-    const AC_Dine_Charge = result.output.AC_Dine_Charge;
     let summaryData = [];
     let transactionDetails = [];
     if (is_Settled === 1) {
@@ -837,7 +837,6 @@ const getCanteenEmployeeReports = AsyncHandler(async (req, res) => {
     }
     res.json({
       is_Settled,
-      AC_Dine_Charge,
       summary: summaryData,
       transactionDetails: transactionDetails,
     });
