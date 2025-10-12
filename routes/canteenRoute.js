@@ -93,6 +93,7 @@ router.route("/rating").post(protect, addRating);
 router.route("/get-complaint").post(protect, getComplaint);
 
 router.post('/fixed-dashboard', protect, getFixedDashboard);
+router.post('/settled-fixed-dashboard', protect, getSettledFixedDashboard);
 router.post('/contractor-dashboard', protect, getContractorDashboard)
 
 

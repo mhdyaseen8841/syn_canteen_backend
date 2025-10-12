@@ -964,6 +964,34 @@ const getFixedDashboard = AsyncHandler(async (req, res) => {
   }
 });
 
+
+const getSettledFixedDashboard = AsyncHandler(async (req, res) => {
+  const { canteenCalendarId, menu_id } = req.body;
+
+  if (!canteenCalendarId) {
+    return res.status(400).json({ message: "canteenCalendarId are required" });
+  }
+
+  let pool = await connectDB();
+  if (!pool) {
+    return res.status(500).send("Database connection not available");
+  }
+
+  try {
+    await pool.connect();
+    const request = pool.request();
+    request.input("canteen_calendar_id", canteenCalendarId);
+    request.input("menu_id", menu_id ? menu_id : null);
+    const result = await request.execute("get_settled_fixed_dashboard");
+
+    const data = result.recordset;
+    res.json(data);
+  } catch (error) {
+    console.log(error);
+    res.status(500).json({ message: "Failed to fetch fixed dashboard", error });
+  }
+});
+
 const getContractorDashboard = AsyncHandler(async (req, res) => {
   const { fromDate, toDate, contractor_id, menu_id } = req.body;
 
@@ -1071,5 +1099,6 @@ export {
   getFixedDashboard,
   getContractorDashboard,
   getVendor,
-  cancelCoupon
+  cancelCoupon,
+  getSettledFixedDashboard
 };
