@@ -824,9 +824,11 @@ const getCanteenEmployeeReports = AsyncHandler(async (req, res) => {
     request.input("employee_id", employeeId);
     request.input("canteen_calendar_id", canteenCalendarId);
     request.output("is_Settled", sql.Int);
+    request.output("AC_Dine_Charge", sql.Int);
     const result = await request.execute("Get_canteen_employee_report");
 
     const is_Settled = result.output.is_Settled;
+    const AC_Dine_Charge = result.output.AC_Dine_Charge;
     let summaryData = [];
     let transactionDetails = [];
     if (is_Settled === 1) {
@@ -837,6 +839,7 @@ const getCanteenEmployeeReports = AsyncHandler(async (req, res) => {
     }
     res.json({
       is_Settled,
+      AC_Dine_Charge,
       summary: summaryData,
       transactionDetails: transactionDetails,
     });
@@ -856,7 +859,7 @@ const getCanteenReports = AsyncHandler(async (req, res) => {
     return res.status(400).json({ message: "employeeType is required" });
   }
 
-  if (companyId == undefined || companyId == null) {
+  if (employeeType!= "fixed" && companyId == undefined || companyId == null) {
     return res.status(400).json({ message: "companyId is required" });
   }
 
@@ -990,6 +993,53 @@ const getContractorDashboard = AsyncHandler(async (req, res) => {
   }
 });
 
+
+const getVendor = AsyncHandler(async (req, res) => {
+  let pool = await connectDB();
+  if (!pool) {
+    return res.status(500).send("Database connection not available");
+  }
+  try {
+    await pool.connect();
+    const result = await pool.request().execute("get_vendor");
+    const data = result.recordset;
+    res.json(data);
+  } catch (error) {
+    res.status(500).json(error);
+  }
+});
+
+
+// cancel couon
+const cancelCoupon = AsyncHandler(async (req, res) => {
+  const { transactionId, Reason= "" } = req.body;
+  if (!transactionId) {
+    return res.status(400).json({ message: "transactionId is required" });
+  }
+  let pool = await connectDB();
+  if (!pool) {
+    return res.status(500).send("Database connection not available");
+  }
+  try {
+    await pool.connect();
+    const result = await pool
+      .request()
+      .input("Transaction_Id", transactionId)
+      .input("User_ID", req.user_id || 0)
+      .input("Reason", Reason || " ")
+      .execute("remove_transaction");
+       const data = result.recordset;
+      console.log(data)
+      // { Status_Code: 0, Resp_Message: 'Transaction id does not exists' } ]
+         if (data && data[0] && data[0].Status_Code === 0) {
+      return res.status(200).json({ message: data[0].Resp_Message });
+    }
+    res.json({ message: "Coupon Cancelled successfully",success: true });
+  } catch (error) {
+    res.status(500).json({ message: "Failed to cancel coupon", error });
+  }
+});
+
 export {
   getCanteenCalender,
   getCurrentTransaction,
@@ -1019,5 +1069,7 @@ export {
   addRating,
   getComplaint,
   getFixedDashboard,
-  getContractorDashboard
+  getContractorDashboard,
+  getVendor,
+  cancelCoupon
 };

@@ -29,7 +29,9 @@ import {
   addRating,
   getComplaint,
   getFixedDashboard,
-  getContractorDashboard
+  getContractorDashboard,
+  getVendor,
+  cancelCoupon
 } from "../controllers/canteenController.js";
 
 // import { exportTransactions } from "../controllers/exportController.js";
@@ -93,6 +95,13 @@ router.route("/get-complaint").post(protect, getComplaint);
 router.post('/fixed-dashboard', protect, getFixedDashboard);
 router.post('/contractor-dashboard', protect, getContractorDashboard)
 
+
+// Vendor
+router.route("/vender").get(protect, getVendor);
+
+
+// Coupon Cancel
+router.route("/cancel-coupon").put(protect, cancelCoupon);
 
 // router.post('/export-transactions',protect, exportTransactions)
 export default router;
