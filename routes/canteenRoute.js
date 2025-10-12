@@ -31,7 +31,8 @@ import {
   getFixedDashboard,
   getContractorDashboard,
   getVendor,
-  cancelCoupon
+  cancelCoupon,
+  getSettledFixedDashboard
 } from "../controllers/canteenController.js";
 
 // import { exportTransactions } from "../controllers/exportController.js";
