@@ -160,6 +160,7 @@ const addEmployee = AsyncHandler(async (req, res) => {
     employee_name,
     department_id,
     company_id,
+    plant_id,
     premium_enabled,
     active,
   } = req.body;
@@ -175,6 +176,7 @@ const addEmployee = AsyncHandler(async (req, res) => {
       .input("employee_name", employee_name)
       .input("employee_type", employee_type)
       .input("company_id", company_id)
+      .input("plant_id",plant_id)
       .input("department_id", department_id)
       .input("premium_enabled", premium_enabled)
       .input("active", active)
@@ -604,14 +606,15 @@ const addExpense = AsyncHandler(async (req, res) => {
     menu_id,
     canteen_calendar_id,
     expense_date,
+    expense_category,
     expense_amount,
     remarks,
   } = req.body;
 
-  if (!menu_id || !canteen_calendar_id) {
+  if (!menu_id || !canteen_calendar_id || !expense_category) {
     return res
       .status(400)
-      .json({ message: "menu_id,  and canteen_calendar_id are required" });
+      .json({ message: "menu_id,  and canteen_calendar_id, expense category are required" });
   }
 
   const pool = await connectDB();
@@ -630,6 +633,7 @@ const addExpense = AsyncHandler(async (req, res) => {
       .input("canteen_calendar_id", canteen_calendar_id)
       .input("expense_date", expense_date)
       .input("expense_amount", expense_amount)
+      .input("expense_category",expense_category)
       .input("remarks", remarks)
       .execute("add_expense");
 
@@ -849,14 +853,10 @@ const getCanteenEmployeeReports = AsyncHandler(async (req, res) => {
 });
 
 const getCanteenReports = AsyncHandler(async (req, res) => {
-  const { canteenCalenderId, employeeType, companyId } = req.body;
+  const { canteenCalenderId, employeeType, companyId, plant_id } = req.body;
 
   if (canteenCalenderId == undefined || canteenCalenderId == null) {
     return res.status(400).json({ message: "canteenCalenderId is required" });
-  }
-
-  if (employeeType == undefined || employeeType == null) {
-    return res.status(400).json({ message: "employeeType is required" });
   }
 
   if (employeeType!= "fixed" && companyId == undefined || companyId == null) {
@@ -871,7 +871,14 @@ const getCanteenReports = AsyncHandler(async (req, res) => {
     const request = pool.request();
     request.input("canteen_calendar_id", canteenCalenderId);
     request.input("company_id", companyId);
-    request.input("employee_type", employeeType);
+    
+    if (employeeType !== undefined && employeeType !== null && employeeType !== "") {
+      request.input("employee_type", employeeType);
+    }
+
+    if (plant_id !== undefined && plant_id !== null && plant_id !== "") {
+      request.input("plant_id", plant_id);
+    }
 
     const result = await request.execute("Get_canteen_report");
 
