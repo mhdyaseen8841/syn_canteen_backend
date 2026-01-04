@@ -32,7 +32,10 @@ import {
   getContractorDashboard,
   getVendor,
   cancelCoupon,
-  getSettledFixedDashboard
+  getSettledFixedDashboard,
+  addPlant,
+  getPlant,
+  editPlant
 } from "../controllers/canteenController.js";
 
 // import { exportTransactions } from "../controllers/exportController.js";
@@ -104,6 +107,10 @@ router.route("/vender").get(protect, getVendor);
 
 // Coupon Cancel
 router.route("/cancel-coupon").put(protect, cancelCoupon);
+
+// Plant
+router.route("/plant").post(protect, addPlant).get(protect, getPlant);
+router.route("/plant").put(protect, editPlant);
 
 // router.post('/export-transactions',protect, exportTransactions)
 export default router;

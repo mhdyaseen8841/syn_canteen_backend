@@ -1068,6 +1068,100 @@ const cancelCoupon = AsyncHandler(async (req, res) => {
   }
 });
 
+// Add Plant
+const addPlant = AsyncHandler(async (req, res) => {
+  const { plant_code, plant_name, company_id } = req.body;
+  if (!plant_code || !plant_name || !company_id) {
+    return res
+      .status(400)
+      .json({ message: "plant_code, plant_name, and company_id are required" });
+  }
+  let pool = await connectDB();
+  if (!pool) {
+    return res.status(500).send("Database connection not available");
+  }
+  try {
+    await pool.connect();
+    const result = await pool
+      .request()
+      .input("plant_code", plant_code)
+      .input("plant_name", plant_name)
+      .input("company_id", company_id)
+      .input("user_id", req.user_id)
+      .output("status_code", sql.Int)
+      .output("Remarks", sql.VarChar)
+      .execute("add_plant");
+    const data = result.output;
+    if (data.status_code === 100) {
+      res.json({ message: "Plant added successfully", data });
+    } else {
+      return res.status(400).json({
+        message: data.Remarks,
+        status_code: data.status_code,
+      });
+    }
+  } catch (error) {
+    res.status(500).json(error);
+  }
+});
+
+// Get Plant
+const getPlant = AsyncHandler(async (req, res) => {
+  const { company_id } = req.query;
+  let pool = await connectDB();
+  if (!pool) {
+    return res.status(500).send("Database connection not available");
+  }
+  try {
+    const request = pool.request();
+    if (company_id && company_id != "null") {
+      request.input("company_id", company_id);
+    }
+    const result = await request.execute("get_plant");
+    const data = result.recordset;
+    res.json(data);
+  } catch (error) {
+    res.status(500).json(error);
+  }
+});
+
+// Edit Plant
+const editPlant = AsyncHandler(async (req, res) => {
+  const { plant_id, plant_code, plant_name } = req.body;
+  if (!plant_id) {
+    return res.status(400).json({ message: "plant_id is required" });
+  }
+  let pool = await connectDB();
+  if (!pool) {
+    return res.status(500).send("Database connection not available");
+  }
+  try {
+    await pool.connect();
+    const result = await pool
+      .request()
+      .input("plant_id", plant_id)
+      .input("plant_code", plant_code)
+      .input("plant_name", plant_name)
+      .input("user_id", req.user_id)
+      .output("status_code", sql.Int)
+      .output("Remarks", sql.VarChar)
+      .execute("edit_plant");
+
+    const data = result.output;
+
+    if (data.status_code === 100) {
+      res.json({ message: "Plant updated successfully", data });
+    } else {
+      return res.status(400).json({
+        message: data.Remarks,
+        status_code: data.status_code,
+      });
+    }
+  } catch (error) {
+    res.status(500).json(error);
+  }
+});
+
 export {
   getCanteenCalender,
   getCurrentTransaction,
@@ -1100,5 +1194,8 @@ export {
   getContractorDashboard,
   getVendor,
   cancelCoupon,
-  getSettledFixedDashboard
+  getSettledFixedDashboard,
+  addPlant,
+  getPlant,
+  editPlant
 };
