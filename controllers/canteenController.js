@@ -170,20 +170,25 @@ const addEmployee = AsyncHandler(async (req, res) => {
   }
   try {
     await pool.connect();
-    const result = await pool
-      .request()
-      .input("employee_code", employee_code)
-      .input("employee_name", employee_name)
-      .input("employee_type", employee_type)
-      .input("company_id", company_id)
-      .input("plant_id",plant_id)
-      .input("department_id", department_id)
-      .input("premium_enabled", premium_enabled)
-      .input("active", active)
-      .input("user", req.user?.display_name || "")
-      .output("status_code", sql.Int)
-      .output("Remarks", sql.VarChar)
-      .execute("add_employee");
+   const request = pool
+  .request()
+  .input("employee_code", employee_code)
+  .input("employee_name", employee_name)
+  .input("employee_type", employee_type)
+  .input("company_id", company_id)
+  .input("department_id", department_id)
+  .input("premium_enabled", premium_enabled)
+  .input("active", active)
+  .input("user", req.user?.display_name || "");
+
+if (plant_id) {
+  request.input("plant_id", plant_id);
+} else {
+  request.input("plant_id", null);
+}
+      request.output("status_code", sql.Int)
+      request.output("Remarks", sql.VarChar)
+      request.execute("add_employee");
     const data = result.output;
     if (data.status_code == 100) {
       res.json({ message: "Employee added successfully", data });
