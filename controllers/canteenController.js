@@ -188,7 +188,7 @@ if (plant_id) {
 }
       request.output("status_code", sql.Int)
       request.output("Remarks", sql.VarChar)
-      request.execute("add_employee");
+    let result = await request.execute("add_employee");
     const data = result.output;
     if (data.status_code == 100) {
       res.json({ message: "Employee added successfully", data });
