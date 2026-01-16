@@ -212,6 +212,7 @@ const editEmployee = AsyncHandler(async (req, res) => {
     department_id,
     company_id,
     employee_type,
+    plant_id,
     premium_enabled,
     active,
     employee_id,
@@ -237,6 +238,7 @@ const editEmployee = AsyncHandler(async (req, res) => {
       .input("active", active)
       .input("user", user || req.user?.display_name || "")
       .input("employee_id", employee_id)
+      .input("plant_id", plant_id)
       .output("status_code", sql.Int)
       .output("Remarks", sql.VarChar)
       .execute("edit_employee");
