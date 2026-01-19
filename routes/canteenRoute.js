@@ -35,7 +35,8 @@ import {
   getSettledFixedDashboard,
   addPlant,
   getPlant,
-  editPlant
+  editPlant,
+  getCanteenReportsWithDate
 } from "../controllers/canteenController.js";
 
 // import { exportTransactions } from "../controllers/exportController.js";
@@ -91,6 +92,7 @@ router.get("/settlement-rates", protect, getSettlementRates);
 //reports
 router.post("/get-canteen-employee-report", protect, getCanteenEmployeeReports);
 router.post("/get-canteen-report", protect, getCanteenReports);
+router.post("/get-canteen-report-date", protect, getCanteenReportsWithDate);
 
 //rating
 router.route("/rating").post(protect, addRating);

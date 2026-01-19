@@ -896,6 +896,44 @@ const getCanteenReports = AsyncHandler(async (req, res) => {
   }
 });
 
+
+const getCanteenReportsWithDate = AsyncHandler(async (req, res) => {
+  const { canteenCalenderId, employeeType, companyId, plant_id } = req.body;
+
+  if (canteenCalenderId == undefined || canteenCalenderId == null) {
+    return res.status(400).json({ message: "canteenCalenderId is required" });
+  }
+
+  if (employeeType!= "fixed" && companyId == undefined || companyId == null) {
+    return res.status(400).json({ message: "companyId is required" });
+  }
+
+  let pool = await connectDB();
+  if (!pool) {
+    return res.status(500).send("Database connection not available");
+  }
+  try {
+    const request = pool.request();
+    request.input("canteen_calendar_id", canteenCalenderId);
+    request.input("company_id", companyId);
+    
+    if (employeeType !== undefined && employeeType !== null && employeeType !== "") {
+      request.input("employee_type", employeeType);
+    }
+
+    if (plant_id !== undefined && plant_id !== null && plant_id !== "") {
+      request.input("plant_id", plant_id);
+    }
+
+    const result = await request.execute("Get_canteen_report_date");
+
+    const data = result.recordset;
+    res.json(data);
+  } catch (error) {
+    res.status(500).json(error);
+  }
+});
+
 const addRating = AsyncHandler(async (req, res) => {
   const { transactionId, rating, isComplaint, remarks } = req.body;
   let pool = await connectDB();
@@ -1211,5 +1249,6 @@ export {
   getSettledFixedDashboard,
   addPlant,
   getPlant,
-  editPlant
+  editPlant,
+  getCanteenReportsWithDate
 };
