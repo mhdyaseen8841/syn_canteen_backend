@@ -7,6 +7,7 @@ import { createServer } from "http";
 import rateLimit from "express-rate-limit";
 import canteenRoute from "./routes/canteenRoute.js";
 import loginRouter from "./routes/loginRoute.js";
+import admsRoutes from "./routes/admsRoutes.js";
 
 const PORT = process.env.PORT || 4000;
 const app = express();
@@ -56,9 +57,9 @@ let pool; // Define pool variable
 //     // process.exit(1); // Exit if DB connection fails
 //   });
 
-  httpServer.listen(PORT, '0.0.0.0', () => {
-    console.log("✅ Server running on port " + PORT);
-  });
+httpServer.listen(PORT, '0.0.0.0', () => {
+  console.log("✅ Server running on port " + PORT);
+});
 const limiter = rateLimit({
   windowMs: 5 * 60 * 1000,
   max: 20,
@@ -78,5 +79,6 @@ app.get("/", (req, res) => {
 
 app.use("/api", canteenRoute);
 app.use("/api/users", loginRouter)
+app.use('/iclock', admsRoutes);
 
 export default app;

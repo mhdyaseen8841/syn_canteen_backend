@@ -170,24 +170,24 @@ const addEmployee = AsyncHandler(async (req, res) => {
   }
   try {
     await pool.connect();
-   const request = pool
-  .request()
-  .input("employee_code", employee_code)
-  .input("employee_name", employee_name)
-  .input("employee_type", employee_type)
-  .input("company_id", company_id)
-  .input("department_id", department_id)
-  .input("premium_enabled", premium_enabled)
-  .input("active", active)
-  .input("user", req.user?.display_name || "");
+    const request = pool
+      .request()
+      .input("employee_code", employee_code)
+      .input("employee_name", employee_name)
+      .input("employee_type", employee_type)
+      .input("company_id", company_id)
+      .input("department_id", department_id)
+      .input("premium_enabled", premium_enabled)
+      .input("active", active)
+      .input("user", req.user?.display_name || "");
 
-if (plant_id) {
-  request.input("plant_id", plant_id);
-} else {
-  request.input("plant_id", null);
-}
-      request.output("status_code", sql.Int)
-      request.output("Remarks", sql.VarChar)
+    if (plant_id) {
+      request.input("plant_id", plant_id);
+    } else {
+      request.input("plant_id", null);
+    }
+    request.output("status_code", sql.Int)
+    request.output("Remarks", sql.VarChar)
     let result = await request.execute("add_employee");
     const data = result.output;
     if (data.status_code == 100) {
@@ -561,7 +561,7 @@ const getCurrentTransaction = AsyncHandler(async (req, res) => {
     request.output("total_pages", 0);
 
     let spName = "Get_canteen_transaction"
-    if(transaction_type == "fixed" || transaction_type == "guest" ){
+    if (transaction_type == "fixed" || transaction_type == "guest") {
       spName = "Get_canteen_transaction_fixed_guest"
     }
     const result = await request.execute(spName);
@@ -640,7 +640,7 @@ const addExpense = AsyncHandler(async (req, res) => {
       .input("canteen_calendar_id", canteen_calendar_id)
       .input("expense_date", expense_date)
       .input("expense_amount", expense_amount)
-      .input("expense_category",expense_category)
+      .input("expense_category", expense_category)
       .input("remarks", remarks)
       .execute("add_expense");
 
@@ -674,12 +674,12 @@ const editExpense = AsyncHandler(async (req, res) => {
     !expense_amount ||
     active === undefined
   ) {
-    if(active != 0 || !expense_id){
-    return res.status(400).json({
-      message:
-        "All fields (expense_id, menu_id, canteen_calendar_id, expense_date, expense_amount, remarks, active) are required",
-    });
-  }
+    if (active != 0 || !expense_id) {
+      return res.status(400).json({
+        message:
+          "All fields (expense_id, menu_id, canteen_calendar_id, expense_date, expense_amount, remarks, active) are required",
+      });
+    }
   }
 
   const pool = await connectDB();
@@ -866,7 +866,7 @@ const getCanteenReports = AsyncHandler(async (req, res) => {
     return res.status(400).json({ message: "canteenCalenderId is required" });
   }
 
-  if (employeeType!= "fixed" && companyId == undefined || companyId == null) {
+  if (employeeType != "fixed" && companyId == undefined || companyId == null) {
     return res.status(400).json({ message: "companyId is required" });
   }
 
@@ -878,7 +878,7 @@ const getCanteenReports = AsyncHandler(async (req, res) => {
     const request = pool.request();
     request.input("canteen_calendar_id", canteenCalenderId);
     request.input("company_id", companyId);
-    
+
     if (employeeType !== undefined && employeeType !== null && employeeType !== "") {
       request.input("employee_type", employeeType);
     }
@@ -904,7 +904,7 @@ const getCanteenReportsWithDate = AsyncHandler(async (req, res) => {
     return res.status(400).json({ message: "canteenCalenderId is required" });
   }
 
-  if (employeeType!= "fixed" && companyId == undefined || companyId == null) {
+  if (employeeType != "fixed" && companyId == undefined || companyId == null) {
     return res.status(400).json({ message: "companyId is required" });
   }
 
@@ -916,7 +916,7 @@ const getCanteenReportsWithDate = AsyncHandler(async (req, res) => {
     const request = pool.request();
     request.input("canteen_calendar_id", canteenCalenderId);
     request.input("company_id", companyId);
-    
+
     if (employeeType !== undefined && employeeType !== null && employeeType !== "") {
       request.input("employee_type", employeeType);
     }
@@ -1090,12 +1090,21 @@ const getVendor = AsyncHandler(async (req, res) => {
 });
 
 
-// cancel couon
+// cancel coupon (single or range)
 const cancelCoupon = AsyncHandler(async (req, res) => {
-  const { transactionId, Reason= "" } = req.body;
-  if (!transactionId) {
-    return res.status(400).json({ message: "transactionId is required" });
+  const { transactionId, transactionIdFrom, transactionIdTo, Reason = "" } = req.body;
+
+  // Resolve from/to — single coupon fills both with the same id
+  const idFrom = transactionIdFrom ?? transactionId;
+  const idTo = transactionIdTo ?? transactionId;
+
+  if (!idFrom || !idTo) {
+    return res.status(400).json({ message: "transactionId (or transactionIdFrom/To) is required" });
   }
+  if (Number(idTo) < Number(idFrom)) {
+    return res.status(400).json({ message: "transactionIdTo must be >= transactionIdFrom" });
+  }
+
   let pool = await connectDB();
   if (!pool) {
     return res.status(500).send("Database connection not available");
@@ -1104,21 +1113,23 @@ const cancelCoupon = AsyncHandler(async (req, res) => {
     await pool.connect();
     const result = await pool
       .request()
-      .input("Transaction_Id", transactionId)
+      .input("Transaction_id_from", Number(idFrom))
+      .input("Transaction_id_to", Number(idTo))
       .input("User_ID", req.user_id || 0)
       .input("Reason", Reason || " ")
-      .execute("remove_transaction");
-       const data = result.recordset;
-      console.log(data)
-      // { Status_Code: 0, Resp_Message: 'Transaction id does not exists' } ]
-         if (data && data[0] && data[0].Status_Code === 0) {
-      return res.status(200).json({ message: data[0].Resp_Message });
+      .execute("remove_transaction_multiple");
+    const data = result.recordset;
+    console.log(data);
+    // { Status_Code: 0, Resp_Message: '...' }
+    if (data && data[0] && data[0].Status_Code === 0) {
+      return res.status(200).json({ success: false, message: data[0].Resp_Message });
     }
-    res.json({ message: "Coupon Cancelled successfully",success: true });
+    res.json({ success: true, message: "Coupon(s) cancelled successfully" });
   } catch (error) {
-    res.status(500).json({ message: "Failed to cancel coupon", error });
+    res.status(500).json({ success: false, message: "Failed to cancel coupon", error });
   }
 });
+
 
 // Add Plant
 const addPlant = AsyncHandler(async (req, res) => {
