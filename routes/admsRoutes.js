@@ -1,76 +1,58 @@
 import express from 'express';
+
 const router = express.Router();
 
-// Middlewares: parse raw text since ADMS devices send data in custom text formats
+// Parse raw text body — ESSL/ZKTeco devices send plain text
 router.use(express.text({ type: '*/*', limit: '10mb' }));
 
-const handleAdmsRequest = async (req, res) => {
-    console.log('====== ADMS / eSSL Device Request Received ======');
-    console.log('Time:', new Date().toISOString());
-    console.log('HTTP Method:', req.method);
-    console.log('Original URL:', req.originalUrl);
-    console.log('Query Parameters:', req.query);
-    console.log('Headers:', req.headers);
-    console.log('Body Length:', req.body ? req.body.length : 0);
+const DEVICE_SN = 'NCD8250700058'; // ESSL X2008 serial number
 
-    if (req.body) {
-        console.log('Body Preview (first 1000 chars):');
-        console.log(req.body.substring(0, 1000));
+// ── GET /iclock/cdata.aspx  →  Handshake (device registers with server) ──────
+// Must reply with this plain-text config block — "OK" alone won't work.
+function sendHandshake(req, res, sn) {
+    const body = [
+        `GET OPTION FROM: ${sn}`,
+        `ATTLOGStamp=9999`,
+        `OPERLOGStamp=9999`,
+        `ATTPHOTOStamp=None`,
+        `ErrorDelay=30`,
+        `Delay=10`,
+        `TransTimes=00:00;14:00`,
+        `TransInterval=1`,
+        `TransFlag=1111000000`,
+        `TimeZone=+5.5`,
+        `Realtime=1`,
+        `Encrypt=0`,
+        `ServerVer=2.0.0`,
+        `PushProtVer=2.0.1`,
+        '',
+    ].join('\r\n');
+
+    res.set('Content-Type', 'text/plain');
+    res.set('Connection', 'close');
+    res.status(200).send(body);
+}
+
+// ── Main handler ──────────────────────────────────────────────────────────────
+const handleAdmsRequest = (req, res) => {
+    const method = req.method.toUpperCase();
+    const { SN = '' } = req.query;
+
+    if (method === 'GET') {
+        return sendHandshake(req, res, SN || DEVICE_SN);
     }
 
-    // const { SN, table } = req.query;
+    if (method === 'POST' && req.body) {
+        console.log('[ADMS] Body:\n', req.body);
+    }
 
-    // if (req.method === 'POST' && table === 'ATTLOG' && req.body) {
-    //     const pool = require('../config/db');
-    //     const lines = req.body.split('\n');
-
-    //     for (let line of lines) {
-    //         line = line.trim();
-    //         if (!line) continue;
-
-    //         // Example line: 2001 2026-06-20 13:18:40     255     15      0       0       0       0       0       0
-    //         // Parts: [ '2001', '2026-06-20', '13:18:40', '255', '15', '0', '0', '0', '0', '0', '0' ]
-    //         const parts = line.split(/\s+/);
-    //         if (parts.length >= 3) {
-    //             const employeeCode = parts[0];
-    //             const punchTime = `${parts[1]} ${parts[2]}`; // YYYY-MM-DD HH:mm:ss
-    //             const punchState = parts[3] || null;
-    //             const verifyMode = parts[4] || null;
-    //             const workCode = parts[5] || null;
-
-    //             try {
-    //                 await pool.query(
-    //                     `INSERT IGNORE INTO attendance_punches_detail 
-    //                     (employee_code, punch_time) 
-    //                     VALUES (?, ?)`,
-    //                     [employeeCode, punchTime]
-    //                 );
-    //             } catch (err) {
-    //                 console.error('Error inserting punch:', err);
-    //             }
-    //         }
-    //     }
-    // }
-
-    console.log('================================================');
-
-    // Respond back to the device to acknowledge receipt
+    res.set('Content-Type', 'text/plain');
+    res.set('Connection', 'close');
     res.status(200).send('OK');
 };
 
-// Define explicit routes used by eSSL / ZKTeco ADMS devices (with and without .aspx extension)
-// router.all('/cdata', handleAdmsRequest);
-router.all('/cdata.aspx', handleAdmsRequest);
-
-// router.all('/getrequest', handleAdmsRequest);
-// router.all('/getrequest.aspx', handleAdmsRequest);
-
-// router.all('/registry', handleAdmsRequest);
-// router.all('/registry.aspx', handleAdmsRequest);
-
-// router.all('/devicecmd', handleAdmsRequest);
-// router.all('/devicecmd.aspx', handleAdmsRequest);
-
-// router.all('/', handleAdmsRequest);
+router.all('/cdata.aspx',      handleAdmsRequest);
+router.all('/getrequest.aspx', (req, res) => { res.set('Content-Type', 'text/plain'); res.set('Connection', 'close'); res.status(200).send('OK'); });
+router.all('/devicecmd.aspx',  (req, res) => { res.set('Content-Type', 'text/plain'); res.set('Connection', 'close'); res.status(200).send('OK'); });
 
 export default router;
